@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  medusa-backend:
+    image: medusa-backend
+    container_name: medusa-backend
+    networks:
+      - medusa
+    environment:
+      - MEDUSA_ADMIN_CORS=http://localhost:7000
+      - MEDUSA_STORE_CORS=http://localhost:8000
+      - DATABASE_URL=postgres://postgres:password@postgres:5432/medusa
+      - JWT_SECRET=your-jwt-secret
+      - COOKIE_SECRET=your-cookie-secret
+    ports:
+      - "9000:9000"
+    depends_on:
+      - postgres
+
+  medusa-frontend:
+    image: medusa-frontend
+    container_name: medusa-frontend
+    networks:
+      - medusa
+    environment:
+      - NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://medusa-backend:9000
+      - NEXT_PUBLIC_BASE_URL=http://localhost:8000
+      - NEXT_PUBLIC_DEFAULT_REGION=us
+      - NEXT_PUBLIC_STRIPE_KEY=
+      - NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+      - NEXT_PUBLIC_SEARCH_APP_ID=
+      - NEXT_PUBLIC_SEARCH_ENDPOINT=http://127.0.0.1:7700
+      - NEXT_PUBLIC_SEARCH_API_KEY=
+      - NEXT_PUBLIC_INDEX_NAME=products
+      - REVALIDATE_SECRET=supersecret
+    ports:
+      - "8000:8000"
+    depends_on:
+      - medusa-backend
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=prince
+      - POSTGRES_DB=medusa
+    ports:
+      - "5433:5432"
+    networks:
+      - medusa
+
+networks:
+  medusa:
+    driver: bridge
+
